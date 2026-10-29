@@ -50,7 +50,7 @@ jobs:
           scanners: vuln,secret,misconfig
           format: table
           severity: HIGH,CRITICAL
-          exit-code: "0"
+          exit-code: "1"
 
       - name: Build image
         run: docker build -t secure-devops-api:${{ github.sha }} .
@@ -63,4 +63,4 @@ jobs:
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "0"
+          exit-code: "1"
