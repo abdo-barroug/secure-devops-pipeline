@@ -1,97 +1,114 @@
-
 # Secure DevOps Pipeline
 
-[![Secure DevOps Pipeline](https://github.com/abdo-barroug/secure-devops-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/abdo-barroug/secure-devops-pipeline/actions/workflows/ci.yml)
+![CI](https://github.com/abdo-barroug/secure-devops-pipeline/actions/workflows/ci.yml/badge.svg)
 
-A beginner-friendly **DevSecOps / CI/CD project** demonstrating automated testing, Docker containerization, security scanning, and automated image publishing to GitHub Container Registry (GHCR).
+A beginner-friendly **DevSecOps project** demonstrating how to build, test, secure, containerize, and deploy a Python REST API using modern DevOps tools.
 
-The goal is to build a Python REST API and automate the steps required to test, scan, package, and publish it.
+The project implements an automated CI/CD pipeline with code quality checks, automated tests, security scanning, Docker image publishing, and cloud deployment.
 
-## Features
+## Live Demo
 
-- REST API built with Python and Flask.
-- Automated tests using pytest.
-- Docker containerization with a non-root application user.
-- Continuous integration with GitHub Actions.
-- Filesystem security scanning with Trivy.
-- Docker image vulnerability scanning with Trivy.
-- Automated Docker image publishing to GitHub Container Registry.
-- SHA-based image tags for identifying specific builds.
-- Automated pipeline triggered by pushes and pull requests.
+**API URL:** https://secure-devops-api.onrender.com
+
+Available endpoints:
+
+- `GET /` — API information
+- `GET /health` — Health check
+- `GET /tasks` — Retrieve all tasks
+- `POST /tasks` — Create a task
+
+> Note: The API uses in-memory storage. Tasks are not persistent and may be lost when the service restarts. The Render free instance may also spin down after inactivity.
+
+## Project Overview
+
+The objective of this project is to understand and implement a basic DevSecOps workflow, from application development to automated deployment.
+
+### Main Features
+
+- REST API developed with Python and Flask.
+- Automated unit and integration tests using Pytest.
+- Python code quality checks using Ruff.
+- Application containerization using Docker.
+- Non-root user configuration inside the Docker container.
+- Automated CI/CD pipeline using GitHub Actions.
+- Source code and Docker image security scanning with Trivy.
+- Docker image publishing to GitHub Container Registry (GHCR).
+- Dependency update automation using Dependabot.
+- Cloud deployment using Render.
 
 ## Architecture
 
-```text
-Developer pushes code to main
-             |
-             v
-       GitHub Actions
-             |
-             v
-       Run pytest tests
-             |
-             v
-    Scan repository with Trivy
-             |
-             v
-       Build Docker image
-             |
-             v
-     Scan Docker image
-             |
-             v
-       Publish image to GHCR
+```mermaid
+flowchart TD
+    A[Developer] --> B[GitHub Repository]
+    B --> C[GitHub Actions]
+    C --> D[Ruff Code Quality]
+    D --> E[Pytest]
+    E --> F[Trivy Security Scanning]
+    F --> G[Docker Build]
+    G --> H[Docker Image Scan]
+    H --> I[Publish to GHCR]
+    B --> J[Render Deployment]
+    J --> K[Public Flask API]
 ```
-
-The publishing job runs only after the tests, build, and security scans succeed. Pull requests run the test and security workflow but do not publish an image.
 
 ## Technologies
 
-| Technology | Purpose |
+| Category | Technologies |
 |---|---|
-| Python 3.12 | Application language |
-| Flask | REST API framework |
-| pytest | Automated testing |
-| Docker | Containerization |
-| GitHub Actions | CI/CD automation |
-| Trivy | Vulnerability, secret, and misconfiguration scanning |
-| GitHub Container Registry (GHCR) | Docker image storage |
+| Programming language | Python 3.12 |
+| API framework | Flask |
+| Testing | Pytest |
+| Code quality | Ruff |
+| Containerization | Docker |
+| CI/CD | GitHub Actions |
+| Security scanning | Trivy |
+| Container registry | GitHub Container Registry |
+| Deployment | Render |
+| Dependency automation | Dependabot |
+| Version control | Git, GitHub |
 
 ## Project Structure
 
 ```text
 secure-devops-pipeline/
+│
 ├── .github/
-│   └── workflows/
-│       └── ci.yml
+│   ├── workflows/
+│   │   └── ci.yml
+│   └── dependabot.yml
+│
 ├── app.py
 ├── test_app.py
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── Dockerfile
-├── .dockerignore
-├── .gitignore
 └── README.md
 ```
 
-## Run Locally
+## Getting Started
+
+### Prerequisites
+
+- Python 3.12 or newer
+- Git
+- Docker (optional, for container execution)
 
 ### 1. Clone the repository
 
 ```bash
 git clone https://github.com/abdo-barroug/secure-devops-pipeline.git
+
 cd secure-devops-pipeline
 ```
 
 ### 2. Create a virtual environment
 
-```bash
-python -m venv .venv
-```
-
-Activate it in PowerShell:
+**Windows PowerShell:**
 
 ```powershell
+py -m venv .venv
+
 .\.venv\Scripts\Activate.ps1
 ```
 
@@ -101,167 +118,209 @@ Activate it in PowerShell:
 python -m pip install -r requirements-dev.txt
 ```
 
-### 4. Run automated tests
-
-```bash
-python -m pytest -v
-```
-
-### 5. Start the API
+### 4. Run the application
 
 ```bash
 python app.py
 ```
 
-Open the health endpoint:
+The API will be available at:
 
-http://localhost:8000/health
+http://localhost:8000
 
-## Run with Docker
+## API Usage
 
-### 1. Build the image
+### Health Check
+
+```http
+GET /health
+```
+
+Example response:
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+### Retrieve Tasks
+
+```http
+GET /tasks
+```
+
+### Create a Task
+
+```http
+POST /tasks
+Content-Type: application/json
+```
+
+Example request:
+
+```json
+{
+  "title": "My first DevOps task"
+}
+```
+
+Example response:
+
+```json
+{
+  "id": 1,
+  "title": "My first DevOps task",
+  "completed": false
+}
+```
+
+The API validates incoming requests and returns HTTP 400 for invalid input.
+
+## Running Tests
+
+Run the automated test suite:
 
 ```bash
-docker build -t secure-devops-api:1.0 .
+python -m pytest -v
 ```
 
-### 2. Run the container
+The test suite currently contains 10 tests covering:
+
+- API home endpoint.
+- Health check endpoint.
+- Initial task retrieval.
+- Task creation.
+- Empty title validation.
+- Invalid JSON validation.
+- Missing title validation.
+- Whitespace-only title validation.
+- Non-string title validation.
+- Title whitespace trimming.
+
+## Code Quality
+
+Run Ruff to check Python code quality:
 
 ```bash
-docker run --rm -p 8000:8000 secure-devops-api:1.0
+ruff check .
 ```
 
-### 3. Test the application
+Ruff is also integrated into the GitHub Actions workflow.
 
-Open:
+## Docker
 
-http://localhost:8000/health
+### Build the Docker image
 
-To stop the application, press `Ctrl+C` in the terminal running the container.
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/` | API information |
-| GET | `/health` | Health check |
-| GET | `/tasks` | List tasks |
-| POST | `/tasks` | Create a task |
-
-### Example: Create a Task
-
-Using PowerShell:
-
-```powershell
-$body = @{ title = "Learn DevSecOps" } | ConvertTo-Json
-
-Invoke-RestMethod `
-  -Uri http://localhost:8000/tasks `
-  -Method Post `
-  -ContentType "application/json" `
-  -Body $body
+```bash
+docker build -t secure-devops-api .
 ```
 
-List tasks:
+### Run the container
 
-```powershell
-Invoke-RestMethod http://localhost:8000/tasks
+```bash
+docker run -d -p 8000:8000 --name secure-devops-api secure-devops-api
 ```
 
-Tasks are stored in memory and are not persistent. They are lost when the application restarts.
+### Test the container
+
+```bash
+curl http://localhost:8000/health
+```
+
+### Stop the container
+
+```bash
+docker stop secure-devops-api
+docker rm secure-devops-api
+```
+
+The Docker image uses a lightweight Python base image and runs the application as a non-root user.
 
 ## CI/CD Pipeline
 
-The GitHub Actions workflow is defined in `.github/workflows/ci.yml`.
+GitHub Actions automatically executes the pipeline on pushes to `main` and pull requests targeting `main`.
 
-The pipeline performs the following steps:
+The workflow includes the following stages:
 
-1. Checks out the source code.
-2. Sets up Python 3.12.
-3. Installs project dependencies.
-4. Runs automated tests with pytest.
-5. Scans repository files with Trivy.
-6. Builds the Docker image.
-7. Scans the Docker image with Trivy.
-8. Publishes the image to GHCR if the previous jobs succeed.
+### 1. Code Quality
 
-The workflow runs on:
+- Install Python dependencies.
+- Run Ruff to detect code quality issues.
 
-- Pushes to the `main` branch.
-- Pull requests targeting `main`.
-- Manual workflow dispatch.
+### 2. Automated Testing
 
-Pull requests do not publish images. Publishing occurs on pushes to `main` and manual runs.
+- Execute the Pytest test suite.
+- Stop the pipeline if tests fail.
 
-## Security
+### 3. Security Scanning
 
-This project integrates security checks into the CI/CD pipeline.
+Trivy performs two types of scans:
 
-- **Non-root container:** the application runs as a non-root user inside the Docker image.
-- **Filesystem scanning:** Trivy scans for vulnerabilities, exposed secrets, and configuration issues.
-- **Container scanning:** Trivy scans operating-system packages and application libraries for vulnerabilities.
-- **Security gate:** scans are configured to fail on findings matching the selected severity criteria.
-- **Registry authentication:** GitHub Actions uses the temporary `GITHUB_TOKEN` with package-write permission to publish the image.
+- Filesystem scan: checks dependencies, secrets, and configuration issues.
+- Docker image scan: checks container image vulnerabilities.
 
-The scans focus on `HIGH` and `CRITICAL` findings. The container scan ignores unfixed vulnerabilities.
+The pipeline is configured to fail when matching HIGH or CRITICAL findings are detected. The image scan ignores vulnerabilities without available fixes.
 
-A successful pipeline does not guarantee that the application is completely secure. Results depend on the scanner version, configuration, vulnerability database, and selected severity filters.
+### 4. Docker Build
 
-## Published Docker Image
+Build the application Docker image.
 
-The image is published to GitHub Container Registry:
+### 5. Image Publishing
 
-`ghcr.io/abdo-barroug/secure-devops-api`
+After successful validation, publish the Docker image to GitHub Container Registry.
 
-### Pull the latest image
+Pull the published image:
 
 ```bash
 docker pull ghcr.io/abdo-barroug/secure-devops-api:latest
 ```
 
-### Run the published image
+Run it:
 
 ```bash
-docker run --rm -p 8000:8000 ghcr.io/abdo-barroug/secure-devops-api:latest
+docker run -d -p 8000:8000 ghcr.io/abdo-barroug/secure-devops-api:latest
 ```
 
-Open:
+The publishing job runs on pushes and manual workflow executions, but not on pull requests.
 
-http://localhost:8000/health
+## Dependency Management
 
-### Pull a specific build
+Dependabot is configured to check for updates weekly for:
 
-Each published build is also tagged with its Git commit SHA.
+- Python dependencies.
+- GitHub Actions dependencies.
 
-```bash
-docker pull ghcr.io/abdo-barroug/secure-devops-api:<commit-sha>
-```
+## Deployment
 
-Replace `<commit-sha>` with the relevant commit SHA.
+The application is deployed on Render using the repository's Dockerfile.
 
-If the package is private, authenticate to GHCR before pulling the image.
+**Live URL:** https://secure-devops-api.onrender.com
 
-## Limitations
+The application reads its port from the `PORT` environment variable, allowing it to run in different environments.
 
-- Tasks are stored in memory and are not persistent.
-- The API does not implement authentication or authorization.
-- The project does not include deployment to a remote server.
-- The security scans cover the configured checks and do not guarantee complete security.
+## Limitations and Future Improvements
 
-## Future Improvements
+This project is a learning-oriented implementation. Possible improvements include:
 
-- Add persistent storage using a database.
-- Implement API authentication and authorization.
-- Automate dependency updates.
-- Add code-quality checks and static analysis.
-- Deploy the application to a test environment.
-- Add monitoring and structured logging.
+- Replace in-memory storage with PostgreSQL.
+- Add authentication and authorization.
+- Implement task update and deletion endpoints.
+- Add API documentation using Swagger/OpenAPI.
+- Improve deployment security and monitoring.
+- Add more comprehensive integration tests.
 
 ## Author
 
 **Abdellah Barroug**
 
-Computer Engineering Student | Cybersecurity & DevSecOps
+Computer Engineering Student — Grenoble INP – Polytech Grenoble
+
+Interested in Cybersecurity, DevOps, and Network Engineering.
 
 - GitHub: [abdo-barroug](https://github.com/abdo-barroug)
-- Project: [Secure DevOps Pipeline](https://github.com/abdo-barroug/secure-devops-pipeline)
+- LinkedIn: [Abdellah Barroug](https://www.linkedin.com/in/abdellah-barroug-782973248/)
+
+---
+
+*This project was developed as a practical introduction to DevOps and DevSecOps practices.*
