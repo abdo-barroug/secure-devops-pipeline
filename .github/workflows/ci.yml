@@ -31,6 +31,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
+      - name: Check code quality with Ruff
+        run: ruff check .
+
       - name: Run tests
         run: python -m pytest -v
 
